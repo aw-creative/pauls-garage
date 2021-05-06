@@ -17,7 +17,7 @@ class CreateBookingsTable extends Migration
             $table->id();
             $table->enum('type',['customer','internal']);
             $table->date('bookingDay');
-            $table->time('bookingTime');
+            $table->time('bookingTime')->nullable();
             $table->morphs('bookable');
             $table->timestamps();
         });
