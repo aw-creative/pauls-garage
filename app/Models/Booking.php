@@ -9,6 +9,8 @@ class Booking extends Model
 {
     use HasFactory;
 
+    public $guarded = ['id'];
+
     public $timestamps = [
         'bookingStart',
         'bookingEnd'

@@ -27,6 +27,7 @@ class Booking extends Component
     public $emailvalid;
     public $emailid;
     public $bookinglist;
+    public $unavailables;
     public $futuredates;
     public $timeslots;
     public $bookingStart;
@@ -47,7 +48,7 @@ class Booking extends Component
 
     public function mount(){
 
-        //Enable the Businesstime Mixin for Carbon business time is configurable bia the carbon config file.
+        //Enable the Businesstime Mixin for Carbon, Business time is configurable via the carbon config file.
         BusinessTime::enable(
             CarbonPeriod::class
         ,config('carbon.opening-hours'));
@@ -59,11 +60,12 @@ class Booking extends Component
         $dates = CarbonPeriod::create(Carbon::tomorrow()->midDay(),'1 day' ,Carbon::now()->addDays(30)->midDay());
         $this->futuredates = [];
         $this->timeslots = [];
+        $this->unavailables = Bookmodel::where('type','internal')->pluck('bookingDay');
         foreach($dates as $date){
             //filter the dates to only show dates that the business is open
             if($date->isBusinessOpen()) $this->futuredates[] = $date;
         }
-        $this->bookinglist = BookModel::whereDate('bookingStart' ,'>', Carbon::now())->pluck('bookingStart');
+
 
     }
 
@@ -73,13 +75,23 @@ class Booking extends Component
     }
 
     public function gettimeslots(){
-
-        $date = Carbon::parse($this->bookingStart);
-        $times = CarbonPeriod::create($this->bookingStart,'30 Minutes' ,$date->endOfDay());
-        foreach($times as $time){
-            //filter the dates to only show dates that the business is open
-            if($time->isBusinessOpen()) $this->timeslots[] = $time;
-        }
+        $this->bookinglist = Bookmodel::whereDate('bookingDay' ,'=',Carbon::createFromFormat('d-m-y',$this->bookingStart))->pluck('bookingTime');
+        $this->timeslots = [
+            '09:00',
+            '09:30',
+            '10:00',
+            '11:00',
+            '12:00',
+            '12:30',
+            '13:00',
+            '13:30',
+            '14:00',
+            '14:30',
+            '15:00',
+            '15:30',
+            '16:00',
+            '16:30',
+        ];
     }
 
     public function manualvehicle(){
@@ -120,10 +132,10 @@ class Booking extends Component
         $this->validate();
         $this->validateEmail();
         $this->booking->type ="customer";
-        $start = Carbon::createFromFormat('d-m-yH:i',$this->bookingStart . $this->bookingTime);
-        $end = Carbon::createFromFormat('d-m-yH:i',$this->bookingStart . $this->bookingTime)->addMinutes(30);
-        $this->booking->bookingStart = $start;
-        $this->booking->bookingEnd = $end;
+        $start = Carbon::createFromFormat('d-m-y',$this->bookingStart);
+        $time = Carbon::createFromFormat('H:i',$this->bookingTime);
+        $this->booking->bookingDay = $start;
+        $this->booking->bookingTime = $time;
         $this->customer->save();
         $vehicle = new Vehicle;
         $vehicle->fill($this->vehicle);
