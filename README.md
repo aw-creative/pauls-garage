@@ -29,8 +29,9 @@ future.
 
 ## Installation
 
-- `clone the repository`
-- `composer install`
+- clone the repository
+- in your ENV file add values for 
+- `composer instal`
 - `npm install`
 - `npm run dev`
 - `php artisan migrate`
@@ -38,3 +39,9 @@ future.
 
 - Register a new user to access admin calendar
 - Visit home page to make a booking
+
+## Email
+
+You will need a mailtrap account or other testing service to recive emails set the SMTP detials up in the ENV file.
+Emails are queued to avoid a slow response from the server.
+They are sent via a queue so you can run `php artisan queue:work --stop-when-empty` from the cli to run the queue worker and send the emails
