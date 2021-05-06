@@ -29,12 +29,12 @@ future.
 
 ## Installation
 
-- clone the repository
-- composer install
-- npm install
-- npm run dev
-- php artisan migrate
-- php artisan serve
+- `clone the repository`
+- `composer install`
+- `npm install`
+- `npm run dev`
+- `php artisan migrate`
+- `php artisan serve`
 
 - Register a new user to access admin calendar
 - Visit home page to make a booking
