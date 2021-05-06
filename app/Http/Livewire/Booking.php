@@ -25,14 +25,13 @@ class Booking extends Component
     public BookModel $booking;
     public $vehicle;
     public $emailvalid;
-
+    public $emailid;
     public $bookinglist;
     public $futuredates;
+    public $timeslots;
     public $bookingStart;
+    public $bookingTime;
     public $bookconfirmed = false;
-
-    ///turn this on to use external service
-    protected $extenalvalidation = false;
 
     protected $emailservice;
 
@@ -40,7 +39,10 @@ class Booking extends Component
         'customer.email' => 'required|email',
         'customer.name' => 'required',
         'customer.phone' => 'required',
-        'bookingStart' => 'required'
+        'bookingStart' => 'required|not_in:Please Select',
+        'vehicle.make' =>' required',
+        'vehicle.model' =>' required',
+        'vehicle.yearOfManufacture' =>' required'
     ];
 
     public function mount(){
@@ -54,8 +56,9 @@ class Booking extends Component
         $this->customer = new Customer;
         $this->emailservice = new EmailValidationService;
         //Get all dates in the future
-        $dates = CarbonPeriod::create(Carbon::tomorrow()->startOfDay(),'30 Minutes' ,Carbon::now()->addDays(30)->startOfDay());
+        $dates = CarbonPeriod::create(Carbon::tomorrow()->midDay(),'1 day' ,Carbon::now()->addDays(30)->midDay());
         $this->futuredates = [];
+        $this->timeslots = [];
         foreach($dates as $date){
             //filter the dates to only show dates that the business is open
             if($date->isBusinessOpen()) $this->futuredates[] = $date;
@@ -69,34 +72,56 @@ class Booking extends Component
         return view('livewire.booking');
     }
 
+    public function gettimeslots(){
+
+        $date = Carbon::parse($this->bookingStart);
+        $times = CarbonPeriod::create($this->bookingStart,'30 Minutes' ,$date->endOfDay());
+        foreach($times as $time){
+            //filter the dates to only show dates that the business is open
+            if($time->isBusinessOpen()) $this->timeslots[] = $time;
+        }
+    }
+
+    public function manualvehicle(){
+        $this->vehicle = ['Make' => null, 'Model' => null];
+    }
+
     public function getVehicle()
     {
         ///Make api call to DVLA API and get the Vehicle Details and then populate the variables with that
-
         $vehicledata = new VehicleSearchService;
         $data = json_decode($vehicledata->search($this->regnumber),true);
         $this->vehicle = $data;
+        $this->vehicle['model'] = null;
+    }
+
+
+    public function updated($propertyName)
+    {
+        $this->validateOnly($propertyName);
     }
 
     public function validateEmail()
     {
         //Internal validation to check it maches regex for email address
-        $this->validateOnly('customer.email');
         ///If we want to use external email validation service this will connect to enternal api and validate it is actually a real email address.
-        if($this->extenalvalidation){
+
             $this->emailservice = new EmailValidationService;
             $data = $this->emailservice->verify($this->customer->email);
             $this->emailvalid = $data;
-            $this->addError('customer.email', 'The email field is invalid.');
-        }
+            $this->addError('customer.email', 'The email is not a real email address');
+
 
     }
 
     public function saveBooking(){
-      //  $this->validate();
+
+        //Validate the Email using third party I picked a free one,,, its slow So worth converting to using Data8 or similar that offers better speeds
+        $this->validate();
+        $this->validateEmail();
         $this->booking->type ="customer";
-        $start = Carbon::createFromFormat('d-m-y H:i',$this->bookingStart);
-        $end = Carbon::createFromFormat('d-m-y H:i',$this->bookingStart)->addMinutes(30);
+        $start = Carbon::createFromFormat('d-m-yH:i',$this->bookingStart . $this->bookingTime);
+        $end = Carbon::createFromFormat('d-m-yH:i',$this->bookingStart . $this->bookingTime)->addMinutes(30);
         $this->booking->bookingStart = $start;
         $this->booking->bookingEnd = $end;
         $this->customer->save();
