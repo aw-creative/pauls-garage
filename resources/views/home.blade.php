@@ -18,7 +18,9 @@
 
             <div class="w-full p-6">
                 <p class="text-gray-700">
-                    <livewire:bookings-calendar calendar-view='calendar/calendar'/>
+                    <livewire:bookings-calendar
+                    calendar-view='calendar/calendar'
+                    before-calendar-view="calendar/pagination"/>
                 </p>
             </div>
 
