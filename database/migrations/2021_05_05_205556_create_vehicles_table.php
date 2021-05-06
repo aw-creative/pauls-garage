@@ -21,8 +21,8 @@ class CreateVehiclesTable extends Migration
             $table->string('fuleType')->nullable();
             $table->string('motStatus')->nullable();
             $table->string('color')->nullable();
-            $table->date('motExpiryDate')->nullable();
-            $table->date('yearOfManufacture');
+            $table->string('motExpiryDate')->nullable();
+            $table->string('yearOfManufacture')->nullable();
             $table->foreignId('customer_id')->contrained();
         });
     }

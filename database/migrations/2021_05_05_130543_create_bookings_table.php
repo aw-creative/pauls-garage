@@ -16,8 +16,8 @@ class CreateBookingsTable extends Migration
         Schema::create('bookings', function (Blueprint $table) {
             $table->id();
             $table->enum('type',['customer','internal']);
-            $table->dateTime('bookingStart');
-            $table->dateTime('bookingEnd');
+            $table->date('bookingDay');
+            $table->time('bookingTime');
             $table->morphs('bookable');
             $table->timestamps();
         });

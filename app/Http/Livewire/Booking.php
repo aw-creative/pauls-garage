@@ -34,7 +34,7 @@ class Booking extends Component
     public $bookingTime;
     public $bookconfirmed = false;
 
-    protected $emailservice;
+    private $emailservice;
 
     protected $rules = [
         'customer.email' => 'required|email',
@@ -55,7 +55,7 @@ class Booking extends Component
 
         $this->booking = new BookModel;
         $this->customer = new Customer;
-        $this->emailservice = new EmailValidationService;
+
         //Get all dates in the future
         $dates = CarbonPeriod::create(Carbon::tomorrow()->midDay(),'1 day' ,Carbon::now()->addDays(30)->midDay());
         $this->futuredates = [];
@@ -117,11 +117,12 @@ class Booking extends Component
     {
         //Internal validation to check it maches regex for email address
         ///If we want to use external email validation service this will connect to enternal api and validate it is actually a real email address.
-
             $this->emailservice = new EmailValidationService;
             $data = $this->emailservice->verify($this->customer->email);
             $this->emailvalid = $data;
-            $this->addError('customer.email', 'The email is not a real email address');
+            if (!$this->emailvalid) {
+                $this->addError('customer.email', 'The email is not a real email address');
+            }
 
 
     }
@@ -136,13 +137,17 @@ class Booking extends Component
         $time = Carbon::createFromFormat('H:i',$this->bookingTime);
         $this->booking->bookingDay = $start;
         $this->booking->bookingTime = $time;
-        $this->customer->save();
-        $vehicle = new Vehicle;
-        $vehicle->fill($this->vehicle);
-        $this->customer->vehicle()->save($vehicle);
-        $this->customer->booking()->save($this->booking);
-        $this->customer->notify(new BookingConfirmed($this->booking));
-        \App\Models\User::first()->notify(new AdminBookingConfirmed($this->booking));
+        //LETS WRAP THIS ALL IN A TRANSACTION SO WE CAL ROLLBACK IF IT FAILS
+        DB::transaction(function () {
+            $this->customer->save();
+            $vehicle = new Vehicle;
+            $vehicle->fill($this->vehicle);
+            $this->customer->vehicle()->save($vehicle);
+            $this->customer->booking()->save($this->booking);
+            $this->customer->notify(new BookingConfirmed($this->booking));
+            $user = \App\Models\User::first();
+            if ($user) $user->notify(new AdminBookingConfirmed($this->booking));
+        });
         $this->bookconfirmed = true;
     }
 
