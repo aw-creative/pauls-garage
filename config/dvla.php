@@ -1,7 +1,7 @@
 <?php
 return[
-    'apikey' => env('VERIFALIA_KEY'),
-    'endpoint' => env('VERIFALIA_ENDPOINT')
+    'apikey' => env('DVLA_KEY'),
+    'endpoint' => env('DVLA_ENDPOINT')
 ]
 
  ?>

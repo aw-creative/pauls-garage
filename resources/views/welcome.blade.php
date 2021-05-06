@@ -38,12 +38,14 @@
                 <h2 class="mb-4 text-gray-800 text-center font-light tracking-wider text-4xl sm:mb-8 sm:text-4xl">
                     Make a Booking
                 </h2>
-                <livewire:booking />
+
             </div>
+            <livewire:booking />
         </div>
 
     </div>
 </div>
+
 <livewire:scripts />
 </body>
 </html>

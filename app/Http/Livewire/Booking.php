@@ -23,7 +23,7 @@ class Booking extends Component
     public $model = 'Car';
     public Customer $customer;
     public BookModel $booking;
-    public array $vehicle;
+    public $vehicle;
     public $emailvalid;
 
     public $bookinglist;
@@ -45,16 +45,21 @@ class Booking extends Component
 
     public function mount(){
 
-        BusinessTime::enable([
-            Carbon::class,
-            CarbonPeriod::class,
-        ]);
+        //Enable the Businesstime Mixin for Carbon business time is configurable bia the carbon config file.
+        BusinessTime::enable(
+            CarbonPeriod::class
+        ,config('carbon.opening-hours'));
+
         $this->booking = new BookModel;
         $this->customer = new Customer;
-
         $this->emailservice = new EmailValidationService;
-        $dates = CarbonPeriod::create(Carbon::tomorrow()->startOfDay()->addHours(9),'30 Minutes' ,Carbon::now()->addDays(30)->startOfDay()->addHours(17));
-        $this->futuredates = $dates->toArray();
+        //Get all dates in the future
+        $dates = CarbonPeriod::create(Carbon::tomorrow()->startOfDay(),'30 Minutes' ,Carbon::now()->addDays(30)->startOfDay());
+        $this->futuredates = [];
+        foreach($dates as $date){
+            //filter the dates to only show dates that the business is open
+            if($date->isBusinessOpen()) $this->futuredates[] = $date;
+        }
         $this->bookinglist = BookModel::whereDate('bookingStart' ,'>', Carbon::now())->pluck('bookingStart');
 
     }

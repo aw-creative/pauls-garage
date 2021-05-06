@@ -50,16 +50,26 @@
                     Booking Details
                   </h3>
                   <div class="mt-2">
-                    <p class="text-sm text-gray-500">
+                    <p class="text-xl text-gray-500">
                       @if($booking->type == 'internal')
                         Internal Booking Details
                       @endif
-
+                    </p>
                       @if($booking->type == 'customer')
-                        Customer Booking Details
-                        Customer: {{$booking->bookable->name}}
-                        Vehicle: {{$booking->bookable->vehicle->registrationnNumber}}
-                      @endif
+                        <h2 class="text-l mb-2">Customer Details</h2>
+                        <ul>
+                        <li>Name: {{$booking->bookable->name}} </li>
+                        <li>Email: {{$booking->bookable->email}} </li>
+                        <li>Phone: {{$booking->bookable->phone}} </li>
+                        </ul>
+                        <h2 class="text-l my-2">Vehicle Details</h2>
+                        <ul>
+                        <li class="mt-3">Vehicle: @foreach($booking->bookable->vehicle->toArray() as $key => $value)
+                        {{ucwords(implode(' ',preg_split('/(?=[A-Z])/', $key)))}} : {{$value}} <br/>
+                        @endforeach
+                        </li></ul>
+
+                       @endif
                     </p>
                   </div>
                 </div>
