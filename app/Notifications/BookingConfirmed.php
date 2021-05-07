@@ -46,7 +46,7 @@ class BookingConfirmed extends Notification implements ShouldQueue
         return (new MailMessage)
                     ->greeting('Hello ' . $notifiable->name . '!')
                     ->line('Your Booking has Been Confirmed.')
-                    ->line('Your ' . $notifiable->vehicle->make .' is booked in at ' . \Carbon\Carbon::parse($this->booking->bookingStart)->toDayDateTimeString())
+                    ->line('Your ' . $notifiable->vehicle->make .' is booked in at ' . \Carbon\Carbon::parse($this->booking->bookingDay . '' .  $this->booking->bookingTime)->toDayDateTimeString())
                     ->line('Thank you for using our application!');
     }
 

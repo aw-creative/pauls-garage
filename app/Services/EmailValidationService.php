@@ -51,15 +51,16 @@ class EmailValidationService {
     public function emailstatuscheck(){
         //It takes a while to check the email so theres a disgusting sleep in here
         if(config('verifalia.enabled')){
-            sleep(5);
+            sleep(10);
             //wE ONLY GET 25 CREDITS A DAY SO IT FAILS OFTEN. IF IT SAYS WE ARE OUT OF CREDITS, THEN JUST SAY THE EMAIL IS VALID AND CARRY ON
+
             if(!isset(json_decode($this->emaildata , true)['overview']['id'])){
                 return true;
             }
             $id = json_decode($this->emaildata , true)['overview']['id'];
             $response = Http::withToken($this->token)->get($this->endpoint .'email-validations/'.$id);
             $data = json_decode($response->body(),true);
-            if($data['entries']['data'][0]['status'] == 'Success'){
+            if(isset($data['entries']) && $data['entries']['data'][0]['status'] == 'Success'){
                 return true;
             } else {
                 return false;
